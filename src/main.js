@@ -123,8 +123,6 @@ async function exportReport() {
     const result = await saveHtmlReport({ html, filename });
     if (result.status === 'cancelled') {
       message.textContent = '已取消导出。';
-    } else if (result.method === 'file-picker') {
-      message.textContent = `HTML 已保存：${filename}`;
     } else {
       message.textContent = `HTML 已开始下载：${filename}。请查看浏览器下载目录。`;
     }

@@ -231,32 +231,11 @@ describe('getUploadFlowState', () => {
 });
 
 describe('saveHtmlReport', () => {
-  it('uses the browser save dialog when available so export has visible feedback', async () => {
-    const writes = [];
-    const result = await saveHtmlReport({
-      html: '<!doctype html><html></html>',
-      filename: 'report.html',
-      windowRef: {
-        showSaveFilePicker: async (options) => {
-          expect(options.suggestedName).toBe('report.html');
-          return {
-            createWritable: async () => ({
-              write: async (blob) => writes.push(await blob.text()),
-              close: async () => writes.push('closed')
-            })
-          };
-        }
-      }
-    });
-
-    expect(result).toEqual({ status: 'saved', method: 'file-picker', filename: 'report.html' });
-    expect(writes).toEqual(['<!doctype html><html></html>', 'closed']);
-  });
-
-  it('falls back to a download link and revokes the blob url after the click', async () => {
+  it('uses a browser download link and revokes the blob url after the click', async () => {
     const clicked = [];
     const revoked = [];
     const timers = [];
+    const savePickerCalls = [];
     const link = {
       style: {},
       click: () => clicked.push(link.href),
@@ -275,15 +254,21 @@ describe('saveHtmlReport', () => {
           createObjectURL: () => 'blob:test',
           revokeObjectURL: (url) => revoked.push(url)
         },
-        setTimeout: (callback) => timers.push(callback)
+        setTimeout: (callback) => timers.push(callback),
+        showSaveFilePicker: () => savePickerCalls.push('called')
       }
     });
 
-    expect(result).toEqual({ status: 'downloaded', method: 'anchor', filename: 'report.html' });
+    expect(result).toEqual({ status: 'downloaded', filename: 'report.html' });
     expect(link.download).toBe('report.html');
     expect(clicked).toEqual(['blob:test']);
+    expect(savePickerCalls).toEqual([]);
     expect(revoked).toEqual([]);
     timers[0]();
     expect(revoked).toEqual(['blob:test']);
+  });
+
+  it('fails before creating a file when there is no html content', async () => {
+    await expect(saveHtmlReport({ html: '', filename: 'report.html' })).rejects.toThrow('没有可导出的 HTML 内容');
   });
 });

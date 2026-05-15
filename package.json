@@ -1,0 +1,19 @@
+{
+  "name": "worklog-budget-report",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "test": "vitest run",
+    "sample": "node scripts/generate-sample-report.mjs"
+  },
+  "dependencies": {
+    "vite": "^7.2.6",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.15"
+  }
+}
